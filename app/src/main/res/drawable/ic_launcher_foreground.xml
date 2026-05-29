@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Outer Cyan Market Ring (Concentric) -->
+    <path
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:strokeLineJoin="round"
+        android:pathData="M 54,54 m -28,0 a 28,28 0 1,1 56,0 a 28,28 0 1,1 -56,0" />
+
+    <!-- Middle Purple Market Ring (Concentric, Broken with dashes to look sectorized) -->
+    <path
+        android:strokeColor="#D500F9"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:strokeLineJoin="round"
+        android:pathData="M 54,54 m -20,0 a 20,20 0 1,1 40,0 a 20,20 0 1,1 -40,0" />
+
+    <!-- Inner Green Market Ring (Concentric) -->
+    <path
+        android:strokeColor="#00E676"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:strokeLineJoin="round"
+        android:pathData="M 54,54 m -12,0 a 12,12 0 1,1 24,0 a 12,12 0 1,1 -24,0" />
+
+    <!-- Pure White Clock Hand Needle -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 54,54 L 72,36" />
+
+    <!-- Center Pivot Axle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 54,54 m -4,0 a 4,4 0 1,1 8,0 a 4,4 0 1,1 -8,0" />
+</vector>

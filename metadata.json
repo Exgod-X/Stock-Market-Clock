@@ -1,0 +1,6 @@
+{
+  "name": "Market Clock",
+  "description": "A high-fidelity circular 24-hour clock displaying operating hours and real-time status across major global stock markets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
