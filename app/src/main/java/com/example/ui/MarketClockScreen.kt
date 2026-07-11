@@ -39,9 +39,12 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import android.media.RingtoneManager
+import android.widget.Toast
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -50,6 +53,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -92,11 +96,25 @@ fun MarketClockScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.notificationEvents.collect { marketName ->
+            try {
+                val notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val ringtone = RingtoneManager.getRingtone(context, notificationUri)
+                ringtone?.play()
+                Toast.makeText(context, "$marketName Stock Market is now OPEN!", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 
     // Base surface in Premium Elegant Sophisticated Dark theme
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = Color(0xFF1C1B1F) // Deep obsidian body background
+        color = if (uiState.darkTheme) Color(0xFF1C1B1F) else Color(0xFFF4F5F7) // Deep obsidian or light body background
     ) {
         Column(
             modifier = Modifier
@@ -145,7 +163,7 @@ fun MarketClockScreen(
                     text = "Global Stock Exchanges",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = if (uiState.darkTheme) Color.White else Color.Black
                     )
                 )
                 
@@ -174,6 +192,9 @@ fun MarketClockScreen(
                         statusDetails = statusDetails,
                         activeArcs = activeArcs,
                         isSelected = isSelected,
+                        isSoundEnabled = uiState.soundEnabledMarketIds.contains(market.id),
+                        isDark = uiState.darkTheme,
+                        onToggleSound = { viewModel.toggleSoundNotification(market.id) },
                         onClick = { viewModel.selectMarket(market.id) }
                     )
                 }
@@ -212,7 +233,7 @@ fun AppHeader(
                     fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color.White
+                    color = if (uiState.darkTheme) Color.White else Color.Black
                 ),
                 modifier = Modifier.testTag("app_title")
             )
@@ -352,10 +373,10 @@ fun ClockCard(
             .fillMaxWidth()
             .widthIn(max = 480.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF2B2930), // Sophisticated Dark Theme Card
+            containerColor = if (uiState.darkTheme) Color(0xFF2B2930) else Color.White
         ),
         shape = RoundedCornerShape(24.dp),
-        border = BorderStrokeCustom(1.dp, Color(0x4D49454F))
+        border = BorderStrokeCustom(1.dp, if (uiState.darkTheme) Color(0x4D49454F) else Color(0xFFE0E0E0))
     ) {
         Column(
             modifier = Modifier
@@ -385,12 +406,12 @@ fun ClockCard(
                     
                     // Draw outer border disk
                     drawCircle(
-                        color = Color(0xFF313033),
+                        color = if (uiState.darkTheme) Color(0xFF313033) else Color(0xFFE0E0E0),
                         radius = clockDrawnRadius,
                         style = Stroke(width = 12.dp.toPx())
                     )
                     drawCircle(
-                        color = Color(0xFF49454F).copy(alpha = 0.4f),
+                        color = (if (uiState.darkTheme) Color(0xFF49454F) else Color.Gray).copy(alpha = 0.4f),
                         radius = clockDrawnRadius + 6.dp.toPx(),
                         style = Stroke(width = 1.dp.toPx())
                     )
@@ -404,7 +425,7 @@ fun ClockCard(
                     for (i in 0 until numMarkets) {
                         val r = maxTrackRadius - i * (trackThickness + trackGap)
                         drawCircle(
-                            color = Color(0xFF313033), // Silent guide track ring
+                            color = if (uiState.darkTheme) Color(0xFF313033) else Color(0xFFEFEFEF), // Silent guide track ring
                             radius = r,
                             style = Stroke(width = trackThickness)
                         )
@@ -474,8 +495,8 @@ fun ClockCard(
                         
                         val tickColor = when {
                             h == 0 -> Color(0xFFD0BCFF) // Midnight highlight
-                            isMajor -> Color(0xFFE6E1E5).copy(alpha = 0.5f)
-                            else -> Color(0xFF938F99).copy(alpha = 0.3f)
+                            isMajor -> (if (uiState.darkTheme) Color(0xFFE6E1E5) else Color.DarkGray).copy(alpha = 0.5f)
+                            else -> (if (uiState.darkTheme) Color(0xFF938F99) else Color.Gray).copy(alpha = 0.3f)
                         }
                         
                         drawLine(
@@ -497,7 +518,7 @@ fun ClockCard(
                             val textStyle = TextStyle(
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (h == 0) Color(0xFFD0BCFF) else Color(0xFF938F99)
+                                color = if (h == 0) Color(0xFFD0BCFF) else (if (uiState.darkTheme) Color(0xFF938F99) else Color.DarkGray)
                             )
                             
                             val textLayoutResult = textMeasurer.measure(
@@ -517,7 +538,7 @@ fun ClockCard(
                     
                     // 4. Draw Center Axle Cap (metallic cover)
                     drawCircle(
-                        color = Color(0xFF1C1B1F),
+                        color = if (uiState.darkTheme) Color(0xFF1C1B1F) else Color(0xFFF4F5F7),
                         radius = clockDrawnRadius * 0.12f
                     )
                     drawCircle(
@@ -578,7 +599,7 @@ fun ClockCard(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 26.sp,
-                    color = Color.White,
+                    color = if (uiState.darkTheme) Color.White else Color.Black,
                     letterSpacing = 1.sp
                 )
             )
@@ -616,10 +637,10 @@ fun ScrubberController(
             .fillMaxWidth()
             .widthIn(max = 480.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF2B2930),
+            containerColor = if (uiState.darkTheme) Color(0xFF2B2930) else Color.White
         ),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStrokeCustom(1.dp, Color(0x4D49454F))
+        border = BorderStrokeCustom(1.dp, if (uiState.darkTheme) Color(0x4D49454F) else Color(0xFFE0E0E0))
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -755,13 +776,20 @@ fun MarketRowCard(
     statusDetails: MarketStatusDetails,
     activeArcs: List<Pair<Double, Double>>,
     isSelected: Boolean,
+    isSoundEnabled: Boolean,
+    isDark: Boolean,
+    onToggleSound: () -> Unit,
     onClick: () -> Unit
 ) {
     val containerBorderColor by animateColorAsState(
-        targetValue = if (isSelected) market.color else Color(0x4D49454F),
+        targetValue = if (isSelected) market.color else (if (isDark) Color(0x4D49454F) else Color(0xFFE0E0E0)),
         label = "border_color"
     )
-    val cardBackground = if (isSelected) Color(0xFF211F26) else Color(0xFF2B2930)
+    val cardBackground = if (isDark) {
+        if (isSelected) Color(0xFF211F26) else Color(0xFF2B2930)
+    } else {
+        if (isSelected) Color(0xFFE0E0E0) else Color.White
+    }
     
     Card(
         modifier = Modifier
@@ -806,10 +834,10 @@ fun MarketRowCard(
                         )
                         Text(
                             text = market.code,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
+                             style = MaterialTheme.typography.titleMedium.copy(
+                                 fontWeight = FontWeight.Black,
+                                 color = if (isDark) Color.White else Color.Black
+                             )
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
@@ -844,6 +872,18 @@ fun MarketRowCard(
                             fontWeight = FontWeight.Medium,
                             color = Color.Gray
                         )
+                    )
+                }
+
+                // Sound Notification Toggle
+                IconButton(
+                    onClick = { onToggleSound() },
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Sound Notification for ${market.name}",
+                        tint = if (isSoundEnabled) market.color else Color.Gray.copy(alpha = 0.4f)
                     )
                 }
 
